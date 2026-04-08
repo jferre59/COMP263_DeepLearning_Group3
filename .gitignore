@@ -1,0 +1,16 @@
+#Virtual environments
+.venv/
+venv/
+env/
+/backend/venv/
+
+#Data files
+/backend/data/creditcard.csv
+
+
+#Python cache files
+__pycache__/
+*.pyc
+
+#Environment variables
+.env
