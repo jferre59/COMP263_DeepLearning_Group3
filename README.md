@@ -9,4 +9,10 @@ This project focuses on detecting fraudulent credit card transactions using deep
 Download the dataset from Kaggle:  
 https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud  
 
-After downloading, extract the CSV file to:
+After downloading, extract the CSV file to: `/backend/data`
+
+### Approach
+Preprocess and scale the data
+Train an autoencoder on normal transactions
+Use reconstruction error to detect fraud
+Add a neural network classifier to improve results
