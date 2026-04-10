@@ -1,7 +1,12 @@
-"# COMP263_DeepLearning_Group3" 
+# COMP263 Deep Learning – Group #3  
 
-## Retrieve Data
-Download data from: 
-https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+## Fraud Detection using Deep Learning
 
-Extract CSV file to /backend/data
+### Project Overview
+This project focuses on detecting fraudulent credit card transactions using deep learning. The dataset is highly imbalanced, so our goal is to catch as many fraud cases as possible while improving overall model performance.
+
+### Dataset
+Download the dataset from Kaggle:  
+https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud  
+
+After downloading, extract the CSV file to:
