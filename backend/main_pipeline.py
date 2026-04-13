@@ -8,6 +8,10 @@ Script to run the pipeline:
  - Evaluates hybrid model performance
 """
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN optimizations for cleaner output
+
 import numpy as np
 import tensorflow as tf
 from imblearn.over_sampling import SMOTE
