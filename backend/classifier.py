@@ -63,6 +63,6 @@ def train_classifier(clf, X_train_aug, y_train, X_val_aug, y_val):
         verbose=0,
     )
 
-    print(f"Classifier trained for {len(history.history['loss'])} epochs.")
+    print(f"\nClassifier trained for {len(history.history['loss'])} epochs.")
 
     return history
