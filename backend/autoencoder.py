@@ -64,7 +64,7 @@ def train_autoencoder(X_train, X_val, y_train):
         verbose=0
     )
 
-    print(f"Autoencoder trained for {len(history.history['loss'])} epochs.")
+    print(f"\nAutoencoder trained for {len(history.history['loss'])} epochs.")
 
     return autoencoder, history
 
