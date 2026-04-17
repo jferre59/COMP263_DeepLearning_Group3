@@ -64,6 +64,7 @@ def train_autoencoder(X_train, X_val, y_train):
         verbose=0
     )
 
+    autoencoder.save("model/autoencoder.keras")
     print(f"\nAutoencoder trained for {len(history.history['loss'])} epochs.")
 
     return autoencoder, history

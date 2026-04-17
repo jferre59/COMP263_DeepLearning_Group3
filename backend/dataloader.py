@@ -76,6 +76,9 @@ print(type(shape))
 '''
 =======
 import pandas as pd
+import os
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def load_data():
     """
