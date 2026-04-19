@@ -12,6 +12,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN optimizations for cleaner output
 
+import json
 import numpy as np
 import tensorflow as tf
 from imblearn.over_sampling import SMOTE
@@ -75,6 +76,14 @@ evaluate("Hybrid Model (default)", y_test, clf_prob, threshold=0.5)
 
 #With found best threshold
 best_t, best_f2 = find_best_threshold(y_test, clf_prob, beta=3.0)
+
+threshold = {
+    "threshold": best_t.item()
+}
+#Save best threshold found to json file
+with open("data/threshold_setting.json", "w") as outfile:
+    json.dump(threshold, outfile)
+
 print(f"\nOptimal F2 threshold: {best_t:.4f}   (F2={best_f2:.4f})\n")
 evaluate("Hybrid Model (Optimized threshold)", y_test, clf_prob, threshold=best_t)
 

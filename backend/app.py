@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from predict_pipeline import predPipeline
@@ -9,6 +10,9 @@ res = {"Class": "", "Status": ""}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
+
+with open("data/threshold_setting.json", "r") as file:
+    threshold = json.load(file)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -30,8 +34,8 @@ def upload_file():
 
         res['Class'] = f"{pred}"
 
-        if pred == 0.0:
-            res['Status'] = 'Non-Fraud'
+        if pred < threshold['threshold']:
+            res['Status'] = 'Legitimate'
         else:
             res['Status'] = 'Fraud'
         
