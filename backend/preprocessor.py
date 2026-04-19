@@ -10,13 +10,19 @@ Usage in other scripts / notebooks:
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import joblib
 
 def preprocess(df):
     #Scaling Amount and Time features
-    scaler = StandardScaler()
+    scaler_time   = StandardScaler()
+    scaler_amount = StandardScaler()
+    
     df = df.copy()
-    df["Amount"] = scaler.fit_transform(df[["Amount"]])
-    df["Time"] = scaler.fit_transform(df[["Time"]])
+    df["Amount"] = scaler_amount.fit_transform(df[["Amount"]])
+    df["Time"] = scaler_time.fit_transform(df[["Time"]])
+
+    #Saving scaler
+    joblib.dump({"time": scaler_time, "amount": scaler_amount}, "model/scaler.pkl")
 
     #Separating features and target variable
     features = [col for col in df.columns if col != "Class"]
