@@ -3,11 +3,20 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from predict_pipeline import predPipeline
 
+# NOTE: flask_cors is added to allow the frontend (index.html opened directly in the
+# browser) to make requests to this Flask server. Without this, the browser blocks
+# cross-origin requests due to CORS policy, resulting in a network error on the frontend.
+from flask_cors import CORS
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 res = {"Class": "", "Status": ""}
 
 app = Flask(__name__)
+
+# NOTE: CORS(app) enables cross-origin requests for all routes in the app.
+CORS(app)
+
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -30,7 +39,10 @@ def upload_file():
 
         res['Class'] = f"{pred}"
 
-        if pred == 0.0:
+        # NOTE: Using 0.5 threshold instead of exact 0.0 comparison.
+        # The model outputs a float probability between 0 and 1.
+        # Checking pred == 0.0 would never match, flagging everything as Fraud.
+        if pred < 0.5:
             res['Status'] = 'Non-Fraud'
         else:
             res['Status'] = 'Fraud'

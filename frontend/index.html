@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fraud Detection · COMP263</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #0f6e56;
+      --brand-light: #1d9e75;
+      --brand-bg: #e1f5ee;
+      --brand-border: #9fe1cb;
+      --danger: #a32d2d;
+      --danger-bg: #fcebeb;
+      --danger-border: #f09595;
+      --neutral: #5f5e5a;
+      --bg: #ffffff;
+      --bg2: #f4f3ef;
+      --bg3: #eeecea;
+      --text: #1a1a18;
+      --text2: #5f5e5a;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --mono: 'DM Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --brand: #1d9e75;
+        --brand-light: #5dcaa5;
+        --brand-bg: #04342c;
+        --brand-border: #0f6e56;
+        --danger: #f09595;
+        --danger-bg: #501313;
+        --danger-border: #a32d2d;
+        --bg: #1c1c1a;
+        --bg2: #252523;
+        --bg3: #2e2e2b;
+        --text: #f0ede8;
+        --text2: #888780;
+        --border: rgba(255,255,255,0.10);
+        --border2: rgba(255,255,255,0.20);
+      }
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg3);
+      font-family: var(--display);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 3rem 1rem 5rem;
+    }
+
+    .fd-root {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    /* ── Header ── */
+    .fd-header { margin-bottom: 2.5rem; }
+
+    .fd-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--brand-light);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .fd-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+
+    .fd-subtitle {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    /* ── Card ── */
+    .fd-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .fd-card-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text2);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fd-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      flex-shrink: 0;
+    }
+
+    /* ── Tabs ── */
+    .fd-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg2);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: 1.25rem;
+    }
+
+    .fd-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .fd-tab.active {
+      background: var(--bg);
+      color: var(--text);
+      border: 0.5px solid var(--border);
+      font-weight: 500;
+    }
+
+    /* ── Upload zone ── */
+    .fd-upload-zone {
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--radius-md);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .fd-upload-zone:hover, .fd-upload-zone.drag {
+      border-color: var(--brand-light);
+      background: var(--brand-bg);
+    }
+
+    .fd-upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fd-upload-icon {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 0.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .fd-upload-icon svg { width: 20px; height: 20px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .fd-upload-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .fd-upload-hint {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    /* ── File preview ── */
+    .fd-file-selected {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.85rem 1rem;
+      background: var(--brand-bg);
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--brand-border);
+      margin-top: 1rem;
+    }
+
+    .fd-file-icon {
+      width: 34px; height: 34px;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 0.5px solid var(--brand-border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .fd-file-icon svg { width: 16px; height: 16px; stroke: var(--brand); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .fd-file-info { flex: 1; min-width: 0; }
+
+    .fd-file-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--brand);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fd-file-size {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--brand-light);
+      margin-top: 2px;
+    }
+
+    .fd-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      color: var(--brand);
+      border-radius: 4px;
+      display: flex; align-items: center;
+      transition: background 0.15s;
+    }
+
+    .fd-remove:hover { background: rgba(15,110,86,0.12); }
+    .fd-remove svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+    /* ── Sample chips ── */
+    .fd-hint-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .fd-hint-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--bg2);
+      border: 0.5px solid var(--border);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .fd-hint-chip:hover {
+      border-color: var(--brand-light);
+      color: var(--brand);
+      background: var(--brand-bg);
+    }
+
+    /* ── Manual grid ── */
+    .fd-manual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+
+    .fd-field { display: flex; flex-direction: column; gap: 4px; }
+
+    .fd-field label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      text-transform: uppercase;
+    }
+
+    .fd-field input {
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 7px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg2);
+      color: var(--text);
+      width: 100%;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .fd-field input:focus { border-color: var(--brand-light); }
+
+    /* ── Submit button ── */
+    .fd-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--brand);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1.25rem;
+    }
+
+    .fd-submit:hover { background: #0a5242; }
+    .fd-submit:active { transform: scale(0.99); }
+    .fd-submit:disabled { background: var(--neutral); cursor: not-allowed; }
+    .fd-submit svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Spinner ── */
+    .fd-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result ── */
+    .fd-result {
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 0.5px solid var(--border);
+      animation: fadeUp 0.35s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fd-result.fraud { background: var(--danger-bg); border-color: var(--danger-border); }
+    .fd-result.safe  { background: var(--brand-bg);  border-color: var(--brand-border); }
+
+    .fd-result-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .fd-verdict-icon {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .fraud .fd-verdict-icon { background: var(--danger-border); }
+    .safe  .fd-verdict-icon { background: var(--brand-border); }
+
+    .fd-verdict-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .fraud .fd-verdict-icon svg { stroke: var(--danger); }
+    .safe  .fd-verdict-icon svg { stroke: var(--brand); }
+
+    .fd-verdict-text { flex: 1; }
+
+    .fd-verdict-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .fraud .fd-verdict-label { color: var(--danger); }
+    .safe  .fd-verdict-label { color: var(--brand); }
+
+    .fd-verdict-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .fraud .fd-verdict-title { color: var(--danger); }
+    .safe  .fd-verdict-title { color: var(--brand); }
+
+    .fd-verdict-desc {
+      font-family: var(--mono);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .fraud .fd-verdict-desc { color: var(--danger); }
+    .safe  .fd-verdict-desc { color: var(--brand); }
+
+    .fd-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fd-meta-item {
+      background: rgba(255,255,255,0.5);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .fd-meta-item { background: rgba(0,0,0,0.2); }
+    }
+
+    .fd-meta-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 3px;
+    }
+
+    .fd-meta-val {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ── Error ── */
+    .fd-error {
+      background: var(--danger-bg);
+      border: 0.5px solid var(--danger-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--danger);
+      margin-top: 1rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      animation: fadeUp 0.25s ease both;
+    }
+
+    .fd-error svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Reset ── */
+    .fd-reset {
+      background: none;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md);
+      padding: 9px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 0.75rem;
+    }
+
+    .fd-reset:hover { background: var(--bg2); color: var(--text); }
+
+    /* ── CSV panel ── */
+    .fd-csv-upload-zone {
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--radius-md);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .fd-csv-upload-zone:hover, .fd-csv-upload-zone.drag {
+      border-color: var(--brand-light);
+      background: var(--brand-bg);
+    }
+
+    .fd-csv-upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fd-csv-row-picker {
+      margin-top: 1rem;
+    }
+
+    .fd-csv-row-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .fd-csv-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.75rem;
+    }
+
+    .fd-csv-controls input[type="number"] {
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 7px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg2);
+      color: var(--text);
+      width: 90px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .fd-csv-controls input[type="number"]:focus { border-color: var(--brand-light); }
+
+    .fd-csv-controls span {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .fd-csv-load-btn {
+      padding: 7px 14px;
+      background: none;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .fd-csv-load-btn:hover { background: var(--bg2); border-color: var(--brand-light); color: var(--brand); }
+
+    .fd-csv-preview {
+      background: var(--bg2);
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      padding: 0.75rem 1rem;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .fd-csv-preview-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .fd-csv-preview-row:last-child { border-bottom: none; }
+    .fd-csv-preview-key { color: var(--text2); }
+    .fd-csv-preview-val { color: var(--text); font-weight: 500; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Footer ── */
+    .fd-footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text2);
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+  <div class="fd-root">
+
+    <div class="fd-header">
+      <div class="fd-eyebrow">COMP263 · ML System</div>
+      <div class="fd-title">Fraud Detection</div>
+      <div class="fd-subtitle">credit card transaction analyser</div>
+    </div>
+
+    <div class="fd-card">
+      <div class="fd-card-label"><span class="fd-dot"></span>Input method</div>
+
+      <div class="fd-tabs">
+        <button class="fd-tab active" onclick="switchTab('upload')">Upload JSON</button>
+        <button class="fd-tab" onclick="switchTab('csv')">Upload CSV</button>
+        <button class="fd-tab" onclick="switchTab('manual')">Manual entry</button>
+      </div>
+
+      <!-- Upload panel -->
+      <div id="panel-upload" class="panel active">
+        <div class="fd-upload-zone" id="dropzone"
+          ondragover="onDrag(event,true)"
+          ondragleave="onDrag(event,false)"
+          ondrop="onDrop(event)">
+          <input type="file" accept=".json" id="fileInput" onchange="onFileChange(event)" />
+          <div class="fd-upload-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="fd-upload-title">Drop your transaction JSON</div>
+          <div class="fd-upload-hint">or click to browse &middot; .json only</div>
+        </div>
+
+        <div id="filePreview" style="display:none" class="fd-file-selected">
+          <div class="fd-file-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="fd-file-info">
+            <div class="fd-file-name" id="fileName">—</div>
+            <div class="fd-file-size" id="fileSize">—</div>
+          </div>
+          <button class="fd-remove" onclick="removeFile()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="fd-hint-row">
+          <div class="fd-hint-chip" onclick="loadSample('fraud')">Load fraud sample</div>
+          <div class="fd-hint-chip" onclick="loadSample('legit')">Load legit sample</div>
+        </div>
+      </div>
+
+      <!-- CSV panel -->
+      <div id="panel-csv" class="panel">
+        <div class="fd-csv-upload-zone" id="csvDropzone"
+          ondragover="onCsvDrag(event,true)"
+          ondragleave="onCsvDrag(event,false)"
+          ondrop="onCsvDrop(event)">
+          <input type="file" accept=".csv" id="csvFileInput" onchange="onCsvFileChange(event)" />
+          <div class="fd-upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="8" y1="13" x2="16" y2="13"/>
+              <line x1="8" y1="17" x2="16" y2="17"/>
+              <line x1="8" y1="9" x2="10" y2="9"/>
+            </svg>
+          </div>
+          <div class="fd-upload-title">Drop your CSV file</div>
+          <div class="fd-upload-hint">creditcard.csv or any same-format CSV</div>
+        </div>
+
+        <div id="csvRowPicker" class="fd-csv-row-picker" style="display:none">
+          <div class="fd-csv-row-label" id="csvRowCount">— rows loaded</div>
+          <div class="fd-csv-controls">
+            <input type="number" id="csvRowIndex" min="0" value="0" />
+            <span id="csvRowMax"></span>
+            <button class="fd-csv-load-btn" onclick="selectCsvRow()">Load row</button>
+          </div>
+          <div id="csvPreviewBox" class="fd-csv-preview" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Manual panel -->
+      <div id="panel-manual" class="panel">
+        <div class="fd-hint-row" style="margin-bottom: 1rem;">
+          <div class="fd-hint-chip" onclick="fillManual('fraud')">Fill with fraud sample</div>
+          <div class="fd-hint-chip" onclick="fillManual('legit')">Fill with legit sample</div>
+          <div class="fd-hint-chip" onclick="clearManual()">Clear all</div>
+        </div>
+        <div class="fd-manual-grid" id="manualGrid"></div>
+      </div>
+
+      <button class="fd-submit" id="submitBtn" onclick="runPrediction()">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Analyse transaction
+      </button>
+    </div>
+
+    <div id="resultArea"></div>
+
+    <div class="fd-footer">COMP263 &nbsp;&middot;&nbsp; Backend: Flask &nbsp;&middot;&nbsp; Model: Autoencoder + Dense NN</div>
+  </div>
+
+  <script>
+    const FIELDS = ['time','v1','v2','v3','v4','v5','v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21','v22','v23','v24','v25','v26','v27','v28','amount'];
+
+    const FRAUD_SAMPLE = {"time":406,"v1":-2.3122265423263,"v2":1.95199201064158,"v3":-1.60985073229769,"v4":3.9979055875468,"v5":-0.522187864667764,"v6":-1.42654531920595,"v7":-2.53738730624579,"v8":1.39165724829804,"v9":-2.77008927719433,"v10":-2.77227214465915,"v11":3.20203320709635,"v12":-2.89990738849473,"v13":-0.595221881324605,"v14":-4.28925378244217,"v15":0.389724120274487,"v16":-1.14074717980657,"v17":-2.83005567450437,"v18":-0.0168224681808257,"v19":0.416955705037907,"v20":0.126910559061474,"v21":0.517232370861764,"v22":-0.0350493686052974,"v23":-0.465211076182388,"v24":0.320198198514526,"v25":0.0445191674731724,"v26":0.177839798284401,"v27":0.261145002567677,"v28":-0.143275874698919,"amount":0};
+
+    const LEGIT_SAMPLE = {"time":0,"v1":-1.359807134,"v2":-0.072781173,"v3":2.536346738,"v4":1.378155224,"v5":-0.33832077,"v6":0.462387778,"v7":0.239598554,"v8":0.098697901,"v9":0.36378697,"v10":0.090794172,"v11":-0.551599533,"v12":-0.617800856,"v13":-0.991389847,"v14":-0.311169354,"v15":1.468176972,"v16":-0.470400525,"v17":0.207971242,"v18":0.02579058,"v19":0.40399296,"v20":0.251412098,"v21":-0.018306778,"v22":0.277837576,"v23":-0.11047391,"v24":0.066928075,"v25":0.128539358,"v26":-0.189114844,"v27":0.133558377,"v28":-0.021053053,"amount":149.62};
+
+    let currentTab = 'upload';
+    let selectedFile = null;
+    let loadedSample = null;
+
+    // CSV state
+    let csvRows = [];
+    let csvSelectedPayload = null;
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.fd-tab').forEach((t, i) =>
+        t.classList.toggle('active',
+          (i === 0 && tab === 'upload') ||
+          (i === 1 && tab === 'csv') ||
+          (i === 2 && tab === 'manual')
+        )
+      );
+      document.getElementById('panel-upload').classList.toggle('active', tab === 'upload');
+      document.getElementById('panel-csv').classList.toggle('active', tab === 'csv');
+      document.getElementById('panel-manual').classList.toggle('active', tab === 'manual');
+      clearResult();
+    }
+
+    function fillManual(type) {
+      const data = type === 'fraud' ? FRAUD_SAMPLE : LEGIT_SAMPLE;
+      FIELDS.forEach(f => {
+        const input = document.getElementById('field_' + f);
+        if (input) input.value = data[f] !== undefined ? data[f] : 0;
+      });
+      clearResult();
+    }
+
+    function clearManual() {
+      FIELDS.forEach(f => {
+        const input = document.getElementById('field_' + f);
+        if (input) input.value = '';
+      });
+      clearResult();
+    }
+
+    function buildManualGrid() {
+      const grid = document.getElementById('manualGrid');
+      grid.innerHTML = FIELDS.map(f => `
+        <div class="fd-field">
+          <label>${f}</label>
+          <input type="number" id="field_${f}" step="any" placeholder="0" />
+        </div>`).join('');
+    }
+
+    buildManualGrid();
+
+    function onDrag(e, on) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.toggle('drag', on);
+    }
+
+    function onDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('drag');
+      const f = e.dataTransfer.files[0];
+      if (f) setFile(f);
+    }
+
+    function onFileChange(e) {
+      const f = e.target.files[0];
+      if (f) setFile(f);
+    }
+
+    function setFile(f) {
+      selectedFile = f;
+      loadedSample = null;
+      document.getElementById('fileName').textContent = f.name;
+      document.getElementById('fileSize').textContent = (f.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('filePreview').style.display = 'flex';
+      clearResult();
+    }
+
+    function removeFile() {
+      selectedFile = null;
+      loadedSample = null;
+      document.getElementById('filePreview').style.display = 'none';
+      document.getElementById('fileInput').value = '';
+      clearResult();
+    }
+
+    function loadSample(type) {
+      loadedSample = type === 'fraud' ? FRAUD_SAMPLE : LEGIT_SAMPLE;
+      selectedFile = null;
+      document.getElementById('fileName').textContent = type === 'fraud' ? 'fraud_sample.json' : 'predict_sample.json';
+      document.getElementById('fileSize').textContent = 'sample data';
+      document.getElementById('filePreview').style.display = 'flex';
+      clearResult();
+    }
+
+    // ── CSV functions ──
+    function onCsvDrag(e, on) {
+      e.preventDefault();
+      document.getElementById('csvDropzone').classList.toggle('drag', on);
+    }
+
+    function onCsvDrop(e) {
+      e.preventDefault();
+      document.getElementById('csvDropzone').classList.remove('drag');
+      const f = e.dataTransfer.files[0];
+      if (f) parseCsv(f);
+    }
+
+    function onCsvFileChange(e) {
+      const f = e.target.files[0];
+      if (f) parseCsv(f);
+    }
+
+    function parseCsv(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const lines = e.target.result.trim().split('\n');
+        if (lines.length < 2) { showError('CSV file appears empty or has no data rows.'); return; }
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+        csvRows = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const vals = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          if (vals.length !== headers.length) continue;
+          const row = {};
+          headers.forEach((h, idx) => { row[h] = parseFloat(vals[idx]) || 0; });
+          csvRows.push(row);
+        }
+
+        const picker = document.getElementById('csvRowPicker');
+        picker.style.display = 'block';
+        document.getElementById('csvRowCount').textContent = `${csvRows.length} rows loaded from ${file.name}`;
+        document.getElementById('csvRowMax').textContent = `of 0 – ${csvRows.length - 1}`;
+        document.getElementById('csvRowIndex').max = csvRows.length - 1;
+        document.getElementById('csvRowIndex').value = 0;
+        csvSelectedPayload = null;
+        document.getElementById('csvPreviewBox').style.display = 'none';
+        clearResult();
+      };
+      reader.readAsText(file);
+    }
+
+    function selectCsvRow() {
+      const idx = parseInt(document.getElementById('csvRowIndex').value);
+      if (isNaN(idx) || idx < 0 || idx >= csvRows.length) {
+        showError(`Row index must be between 0 and ${csvRows.length - 1}.`);
+        return;
+      }
+      const raw = csvRows[idx];
+
+      // Map CSV columns to the expected pipeline fields.
+      // CSV headers are capitalised (Time, V1...V28, Amount) and may include
+      // a 'Class' column which must be excluded — pipeline expects exactly 30 fields.
+      csvSelectedPayload = {};
+      FIELDS.forEach(f => {
+        // Try lowercase match first, then capitalised (e.g. 'time' -> 'Time', 'v1' -> 'V1')
+        const capitalised = f.charAt(0).toUpperCase() + f.slice(1);
+        if (raw[f] !== undefined) {
+          csvSelectedPayload[f] = raw[f];
+        } else if (raw[capitalised] !== undefined) {
+          csvSelectedPayload[f] = raw[capitalised];
+        } else {
+          csvSelectedPayload[f] = 0;
+        }
+      });
+
+      // Show preview of key fields
+      const preview = document.getElementById('csvPreviewBox');
+      const previewFields = ['time', 'v1', 'v2', 'v3', 'amount'];
+      const actualClass = raw['class'] !== undefined ? raw['class'] : (raw['Class'] !== undefined ? raw['Class'] : '—');
+      const classLabel = actualClass == 1 ? '1 (Fraud)' : actualClass == 0 ? '0 (Legit)' : actualClass;
+      preview.innerHTML = previewFields.map(f =>
+        `<div class="fd-csv-preview-row">
+          <span class="fd-csv-preview-key">${f}</span>
+          <span class="fd-csv-preview-val">${csvSelectedPayload[f]}</span>
+        </div>`
+      ).join('') +
+      `<div class="fd-csv-preview-row"><span class="fd-csv-preview-key">· · · ${FIELDS.length} fields total</span><span></span></div>` +
+      `<div class="fd-csv-preview-row" style="margin-top:4px;border-top:0.5px solid var(--brand-border);padding-top:6px">
+        <span class="fd-csv-preview-key" style="color:var(--brand)">actual class (CSV label)</span>
+        <span class="fd-csv-preview-val" style="color:var(--brand)">${classLabel}</span>
+      </div>`;
+      preview.style.display = 'block';
+      clearResult();
+    }
+
+    function clearResult() {
+      document.getElementById('resultArea').innerHTML = '';
+    }
+
+    async function runPrediction() {
+      const btn = document.getElementById('submitBtn');
+
+      if (currentTab === 'upload' && !selectedFile && !loadedSample) {
+        showError('No file selected. Upload a JSON file or load a sample.');
+        return;
+      }
+
+      if (currentTab === 'csv' && !csvSelectedPayload) {
+        showError('No CSV row selected. Upload a CSV file and click "Load row".');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="fd-spinner"></div> Analysing&hellip;';
+      clearResult();
+
+      try {
+        let payload;
+
+        if (currentTab === 'manual') {
+          payload = {};
+          for (const f of FIELDS) {
+            const val = document.getElementById('field_' + f).value;
+            payload[f] = parseFloat(val) || 0;
+          }
+        } else if (currentTab === 'csv') {
+          payload = csvSelectedPayload;
+        } else if (loadedSample) {
+          payload = loadedSample;
+        } else {
+          const text = await selectedFile.text();
+          payload = JSON.parse(text);
+        }
+
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        const formData = new FormData();
+        const fname = currentTab === 'csv'
+          ? 'csv_row.json'
+          : selectedFile
+            ? selectedFile.name
+            : (loadedSample === FRAUD_SAMPLE ? 'fraud.json' : 'predict.json');
+        formData.append('file', blob, fname);
+
+        const res = await fetch('http://127.0.0.1:5000/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Server returned ${res.status}`);
+        }
+
+        const data = await res.json();
+        showResult(data, payload);
+
+      } catch (err) {
+        if (
+          err.message.includes('fetch') ||
+          err.message.includes('Failed') ||
+          err.message.includes('NetworkError') ||
+          err.message.includes('CORS')
+        ) {
+          showError('Cannot reach the backend at localhost:5000. Make sure your Flask server is running.');
+        } else {
+          showError(err.message);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Analyse transaction`;
+      }
+    }
+
+    function showResult(data, payload) {
+      const isFraud = data.Status === 'Fraud';
+      const area = document.getElementById('resultArea');
+
+      const iconFraud = `<svg viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>`;
+
+      const iconSafe = `<svg viewBox="0 0 24 24">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>`;
+
+      const amount = payload.amount !== undefined ? ('$' + parseFloat(payload.amount).toFixed(2)) : '—';
+      const time   = payload.time   !== undefined ? payload.time : '—';
+
+      area.innerHTML = `
+        <div class="fd-result ${isFraud ? 'fraud' : 'safe'}">
+          <div class="fd-result-header">
+            <div class="fd-verdict-icon">${isFraud ? iconFraud : iconSafe}</div>
+            <div class="fd-verdict-text">
+              <div class="fd-verdict-label">${isFraud ? 'Alert · Suspicious activity' : 'Clear · No anomaly detected'}</div>
+              <div class="fd-verdict-title">${isFraud ? 'Fraudulent transaction' : 'Legitimate transaction'}</div>
+              <div class="fd-verdict-desc">${isFraud
+                ? 'This transaction was flagged as potentially fraudulent.'
+                : 'This transaction appears to be genuine.'}</div>
+            </div>
+          </div>
+          <div class="fd-meta">
+            <div class="fd-meta-item"><div class="fd-meta-key">Verdict</div><div class="fd-meta-val">${data.Status}</div></div>
+            <div class="fd-meta-item"><div class="fd-meta-key">Raw class</div><div class="fd-meta-val" style="font-size:12px">${data.Class}</div></div>
+            <div class="fd-meta-item"><div class="fd-meta-key">Amount</div><div class="fd-meta-val">${amount}</div></div>
+            <div class="fd-meta-item"><div class="fd-meta-key">Time index</div><div class="fd-meta-val">${time}</div></div>
+          </div>
+        </div>
+        <button class="fd-reset" onclick="clearResult()">Clear result</button>
+      `;
+    }
+
+    function showError(msg) {
+      document.getElementById('resultArea').innerHTML = `
+        <div class="fd-error">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ${msg}
+        </div>`;
+    }
+  </script>
+</body>
+</html>

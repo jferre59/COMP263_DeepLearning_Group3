@@ -20,8 +20,11 @@ def predPipeline(file): #Function predPipeline, takes in a string for the file n
     pred_scaled[:, 0]  = scaler["time"].transform(pred[:, [0]])   #Time index 0
     pred_scaled[:, 29] = scaler["amount"].transform(pred[:, [29]]) #Amount is index 29
 
-    autoencoder = keras.models.load_model("model/autoencoder.keras") #Load autoencoder model
-    clf = keras.models.load_model("model/clf.keras") #Load Dense NN Classifier model
+    # NOTE: safe_mode=False is added to bypass a Keras version mismatch issue where the
+    # Dense layer config contains 'quantization_config' which is unrecognized in this
+    # version of Keras (3.12.0). This allows the model to load without strict config validation.
+    autoencoder = keras.models.load_model("model/autoencoder.keras", safe_mode=False) #Load autoencoder model
+    clf = keras.models.load_model("model/clf.keras", safe_mode=False) #Load Dense NN Classifier model
 
     reconstruction = autoencoder.predict(pred_scaled, verbose=0)
     r_error = np.mean(np.square(pred_scaled - reconstruction), axis=1)
@@ -32,5 +35,3 @@ def predPipeline(file): #Function predPipeline, takes in a string for the file n
 
 
 #predPipeline("predict.json") #Debugging line for testing
-
-    
